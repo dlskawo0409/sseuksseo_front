@@ -1,0 +1,75 @@
+@import "tailwindcss"; 
+
+@theme {
+  /* 팔레트(요청하신 색) */
+  --color-brand-ink: #010A26;
+  --color-brand-deep: #011640;
+  --color-brand-navy: #0D2840;
+  --color-brand-gray: #6e6e73;
+  --color-brand-paper: #F2F1F0;
+
+  --color-brand-royal: #132F7C;
+  --color-brand-midnight: #132B5B;
+
+  /* 선택 포인트 */
+  --color-brand-accent: #6366f1;
+
+
+  /* 선택: 폰트 토큰 */
+  --font-sans: "Pretendard Variable", Pretendard, system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+}
+
+/* 페이지 베이스 스타일 */
+html, body, #root { height: 100%; }
+body {
+  font-family: var(--font-sans);
+  color: var(--color-brand-navy);
+  overflow-x: hidden;
+}
+
+/* 글로벌 애니메이션 */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(99, 102, 241, 0.6); }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+
+@keyframes shine {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
+}
+
+
+/* 글래스모피즘 효과 */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+
+/* 3D 카드 효과 */
+.card-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease;
+}
+
+.card-3d:hover {
+  transform: translateY(-10px) rotateX(5deg);
+}
+
+.particle:nth-child(2) { animation-delay: 0.5s; }
+.particle:nth-child(3) { animation-delay: 1s; }
+.particle:nth-child(4) { animation-delay: 1.5s; }
+.particle:nth-child(5) { animation-delay: 2s; }
