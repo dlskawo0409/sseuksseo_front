@@ -6,7 +6,7 @@ export default function TopNavigation() {
 
   const buttons = [
     { name: "기본정보", path: "/member" },
-    { name: "학력/연구/경력", path: "/about" },
+    { name: "학력/연구/경력", path: "/education" },
     { name: "어학/자격/기타", path: "/services" },
   ];
 

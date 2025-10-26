@@ -4,7 +4,6 @@ import Swal from "sweetalert2";
 import Header from "@/components/common/Header";
 import Field from "@/components/common/Field";
 import TopNavigation from "@/components/common/TopNavigation";
-import TextDivider from "@/components/common/TextDivider";
 import ProfileInput from "@/components/memberInput/ProfileInput";
 import BirthInput from "@/components/memberInput/BirthInput";
 import AddressInput from "@/components/memberInput/AddressInput";
@@ -460,7 +459,7 @@ export default function ResumePrefillPage() {
               <BirthInput value={birthDay} setBirthDay={setBirthDay} />
             </div>
 
-            <TextDivider text="인적사항" className="mt-10 mb-10" />
+            <Divider text="인적사항" className="mt-10 mb-10" />
 
             <ProfileInput
               label="프로필 사진"
@@ -506,7 +505,7 @@ export default function ResumePrefillPage() {
               onValidChange={(ok: boolean) => console.log("보훈 compact valid?", ok)}
             />
 
-            <TextDivider text="병력사항" className="mt-10 mb-10" />
+            <Divider text="병력사항" className="mt-10 mb-10" />
 
             <RadioSelector
               label="병역 상태"
