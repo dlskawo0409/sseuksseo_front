@@ -5,11 +5,7 @@ import React from "react";
  */
 export type AdmissionType = "ENTRANCE" | "TRANSFER";
 export type ClassTimeType = "DAY" | "NIGHT";
-export type EducationLevel =
-  | "GED"
-  | "HIGH_SCHOOL"
-  | "UNIVERSITY"
-  | "GRADUATE_SCHOOL";
+export type EducationLevel = "GED" | "HIGH_SCHOOL" | "UNIVERSITY" | "GRADUATE_SCHOOL";
 export type GraduationType =
   | "GRADUATED"
   | "BACHELOR"
@@ -71,7 +67,7 @@ export interface Education {
   classTimeType?: ClassTimeType | "";
   schoolBranch?: SchoolBranch | "";
   startDate?: string; // YYYY-MM-DD
-  endDate?: string;   // YYYY-MM-DD
+  endDate?: string; // YYYY-MM-DD
 
   myMajor?: MyMajor; // 화면에서만 보조로 사용 (백엔드로 전송 시 분리 가능)
 }
@@ -240,11 +236,7 @@ function NumberInput(props: {
   );
 }
 
-function DateInput(props: {
-  value?: string;
-  onChange: (val: string) => void;
-  disabled?: boolean;
-}) {
+function DateInput(props: { value?: string; onChange: (val: string) => void; disabled?: boolean }) {
   const { value, onChange, disabled } = props;
   return (
     <input
@@ -271,7 +263,11 @@ function Row({ children }: { children: React.ReactNode }) {
   return <div className="grid grid-cols-1 md:grid-cols-2 gap-3">{children}</div>;
 }
 
-export default function EducationListEditor({ value, setValue, disabled }: EducationListEditorProps) {
+export default function EducationListEditor({
+  value,
+  setValue,
+  disabled,
+}: EducationListEditorProps) {
   const addEducation = () => {
     setValue([...(value ?? []), emptyEducation()]);
   };
@@ -355,7 +351,10 @@ export default function EducationListEditor({ value, setValue, disabled }: Educa
                     <Select
                       value={edu.educationLevel ?? ""}
                       onChange={(v) => updateAt(idx, "educationLevel", v as EducationLevel)}
-                      options={Object.entries(LABELS.EducationLevel).map(([value, label]) => ({ value, label }))}
+                      options={Object.entries(LABELS.EducationLevel).map(([value, label]) => ({
+                        value,
+                        label,
+                      }))}
                       placeholder="학력 구분 선택"
                       disabled={disabled}
                     />
@@ -365,7 +364,10 @@ export default function EducationListEditor({ value, setValue, disabled }: Educa
                     <Select
                       value={edu.admissionType ?? ""}
                       onChange={(v) => updateAt(idx, "admissionType", v as AdmissionType)}
-                      options={Object.entries(LABELS.AdmissionType).map(([value, label]) => ({ value, label }))}
+                      options={Object.entries(LABELS.AdmissionType).map(([value, label]) => ({
+                        value,
+                        label,
+                      }))}
                       placeholder="입학/편입 선택"
                       disabled={disabled}
                     />
@@ -378,7 +380,10 @@ export default function EducationListEditor({ value, setValue, disabled }: Educa
                     <Select
                       value={edu.graduationType ?? ""}
                       onChange={(v) => updateAt(idx, "graduationType", v as GraduationType)}
-                      options={Object.entries(LABELS.GraduationType).map(([value, label]) => ({ value, label }))}
+                      options={Object.entries(LABELS.GraduationType).map(([value, label]) => ({
+                        value,
+                        label,
+                      }))}
                       placeholder="졸업 구분 선택"
                       disabled={disabled}
                     />
@@ -400,7 +405,10 @@ export default function EducationListEditor({ value, setValue, disabled }: Educa
                     <Select
                       value={edu.schoolLocation ?? ""}
                       onChange={(v) => updateAt(idx, "schoolLocation", v as SchoolLocation)}
-                      options={Object.entries(LABELS.SchoolLocation).map(([value, label]) => ({ value, label }))}
+                      options={Object.entries(LABELS.SchoolLocation).map(([value, label]) => ({
+                        value,
+                        label,
+                      }))}
                       placeholder="지역 선택"
                       disabled={disabled}
                     />
@@ -410,7 +418,10 @@ export default function EducationListEditor({ value, setValue, disabled }: Educa
                     <Select
                       value={edu.classTimeType ?? ""}
                       onChange={(v) => updateAt(idx, "classTimeType", v as ClassTimeType)}
-                      options={Object.entries(LABELS.ClassTimeType).map(([value, label]) => ({ value, label }))}
+                      options={Object.entries(LABELS.ClassTimeType).map(([value, label]) => ({
+                        value,
+                        label,
+                      }))}
                       placeholder="주/야간 선택"
                       disabled={disabled}
                     />
@@ -423,7 +434,10 @@ export default function EducationListEditor({ value, setValue, disabled }: Educa
                     <Select
                       value={edu.schoolBranch ?? ""}
                       onChange={(v) => updateAt(idx, "schoolBranch", v as SchoolBranch)}
-                      options={Object.entries(LABELS.SchoolBranch).map(([value, label]) => ({ value, label }))}
+                      options={Object.entries(LABELS.SchoolBranch).map(([value, label]) => ({
+                        value,
+                        label,
+                      }))}
                       placeholder="본교/분교 선택"
                       disabled={disabled}
                     />
@@ -450,11 +464,15 @@ export default function EducationListEditor({ value, setValue, disabled }: Educa
                   <div className="flex items-center justify-between mb-1">
                     <SectionTitle>전공 정보</SectionTitle>
                     {!myMajorAllowed && (
-                      <span className="text-xs text-gray-500">대학교/대학원에서만 입력 가능합니다</span>
+                      <span className="text-xs text-gray-500">
+                        대학교/대학원에서만 입력 가능합니다
+                      </span>
                     )}
                   </div>
 
-                  <div className={myMajorAllowed ? "opacity-100" : "opacity-50 pointer-events-none"}>
+                  <div
+                    className={myMajorAllowed ? "opacity-100" : "opacity-50 pointer-events-none"}
+                  >
                     <Row>
                       <div>
                         <SectionTitle>전공 구분</SectionTitle>
@@ -464,7 +482,10 @@ export default function EducationListEditor({ value, setValue, disabled }: Educa
                             if (!edu.myMajor) ensureMyMajor(idx);
                             updateMyMajor(idx, "majorKind", v as MajorKind);
                           }}
-                          options={Object.entries(LABELS.MajorKind).map(([value, label]) => ({ value, label }))}
+                          options={Object.entries(LABELS.MajorKind).map(([value, label]) => ({
+                            value,
+                            label,
+                          }))}
                           placeholder="전공 구분 선택"
                           disabled={disabled || !myMajorAllowed}
                         />

@@ -1,8 +1,7 @@
 import GoogleIcon from "@/components/icons/GoogleIcon";
 import ChromeIcon from "@/components/icons/ChromeIcon";
 import HoverButton from "@/components/common/HoverButton";
-
-const BACKEND_GOOGLE_LOGIN_URL = "http://localhost:8080/oauth2/authorization/google";
+import { BACKEND_GOOGLE_LOGIN_URL } from "@/config";
 
 export default function HeroSection() {
   return (

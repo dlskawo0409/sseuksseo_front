@@ -15,8 +15,9 @@ import Divider from "@/components/common/Divider";
 import RadioSelector from "@/components/common/RadioSelector";
 import Dropbox from "@/components/common/Dropbox";
 import ServicePeriodInput from "@/components/memberInput/ServicePeriodInput";
+import { ProfileApi } from "@/service/profile";
+import { MemberBundleApi, MemberRequestPayload } from "@/service/member";
 
-// ✅ http 유틸 임포트 (네가 준 유틸)
 import { http } from "@/lib/https";
 
 // ----------------- 타입들 -----------------
@@ -136,60 +137,6 @@ const militaryRankOptions = [
   { value: "GENERAL" as MilitaryRank, label: "대장" },
 ];
 
-// ----------------- API 타입 & 모듈 -----------------
-type MemberRequestPayload = {
-  member: {
-    koreanName: string;
-    englishName: string;
-    hanjaName: string;
-    gender: string;
-    birthDay: string;
-    addressNum: string;
-    address: string;
-    addressDetail: string;
-    email: string;
-    phoneNum: string;
-  };
-  disability: {
-    disabilityType?: string;
-    disabilityLevel?: "심한 장애인" | "심하지 않은 장애인" | "";
-  };
-  veteran: {
-    veteranNo?: string;
-    veteranRatio?: 0 | 5 | 10;
-  };
-  military: {
-    status?: MilitaryStatus | "";
-    serviceType?: ServiceType | "";
-    branch?: BranchType | "";
-    rank?: MilitaryRank | "";
-    militaryStartDate?: string;
-    militaryEndDate?: string;
-  };
-};
-
-type MemberBundleResponse = {
-  id: number;
-  memberId?: number;
-  message?: string;
-};
-
-// 실제 엔드포인트로 교체
-const BASE_PATH = "/api/v1/member/init";
-
-const MemberBundleApi = {
-  saveAll(
-    payload: MemberRequestPayload,
-    opts?: { withCredentials?: boolean; bearerToken?: string | null; timeoutMs?: number }
-  ) {
-    return http.post<MemberBundleResponse, MemberRequestPayload>(`${BASE_PATH}`, payload, {
-      withCredentials: opts?.withCredentials ?? true,
-      bearerToken: opts?.bearerToken ?? null,
-      timeoutMs: opts?.timeoutMs ?? 15000,
-    });
-  },
-};
-
 // ----------------- 컴포넌트 -----------------
 export default function ResumePrefillPage() {
   const navigate = useNavigate();
@@ -228,6 +175,8 @@ export default function ResumePrefillPage() {
   const [militaryStartDate, setMilitaryStartDate] = useState("");
   const [militaryEndDate, setMilitaryEndDate] = useState("");
 
+  const [photoChanged, setPhotoChanged] = useState(false);
+
   // UI 상태
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -251,7 +200,7 @@ export default function ResumePrefillPage() {
     if (!photo) return false; // ⚠️ 현재는 파일을 서버로 안보내는 JSON 전송. 파일 업로드 시 FormData 분기 필요.
 
     // 주소
-    if (!addressNum || !address || !addressDetail) return false;
+    if (!addressNum || !address) return false;
 
     // 연락처
     if (!email || !phoneNum) return false;
@@ -294,6 +243,21 @@ export default function ResumePrefillPage() {
     militaryEndDate,
   ]);
 
+  const setPhotoWithFlag: React.Dispatch<React.SetStateAction<File | null>> = (next) => {
+    // next가 함수일 수도 있으니 안전 처리
+    if (typeof next === "function") {
+      setPhoto((prev) => {
+        const computed = (next as (p: File | null) => File | null)(prev);
+        if (computed !== prev) setPhotoChanged(true);
+        return computed;
+      });
+    } else {
+      setPhoto(next);
+      // 이전 값과 달라졌을 때만 true (간단 비교: 참조 비교)
+      setPhotoChanged(true);
+    }
+  };
+
   // SweetAlert로 사전 안내(선택)
   const showSubmitCheck = () => {
     if (canSubmit) {
@@ -312,8 +276,8 @@ export default function ResumePrefillPage() {
       });
     }
   };
+  const toNull = (s?: string | null) => (s != null && s.trim() !== "" ? s.trim() : null);
 
-  // 실제 제출
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
 
@@ -327,62 +291,63 @@ export default function ResumePrefillPage() {
     setErrorMsg(null);
     setOkMsg(null);
 
-    const payload: MemberRequestPayload = {
-      member: {
-        koreanName: koreanName.trim(),
-        englishName: englishName.trim(),
-        hanjaName: hanjaName.trim(),
-        gender: gender.trim(),
-        birthDay: birthDay.trim(),
-        addressNum: addressNum.trim(),
-        address: address.trim(),
-        addressDetail: addressDetail.trim(),
-        email: email.trim(),
-        phoneNum: phoneNum.trim(),
+    const InitMemberRequest /* : MemberRequestPayload (타입 문제 설명은 아래) */ = {
+      memberCreateRequest: {
+        koreanName: toNull(koreanName),
+        englishName: toNull(englishName),
+        hanjaName: toNull(hanjaName),
+        gender: gender ?? null, // 문자열이 아니라 enum/리터럴이면 그대로 null 처리
+        birthDay: toNull(birthDay),
+        addressNum: toNull(addressNum),
+        address: toNull(address),
+        addressDetail: toNull(addressDetail),
+        email: toNull(email),
+        phoneNum: toNull(phoneNum),
       },
-      disability: {
-        disabilityType: disabilityType?.trim(),
-        disabilityLevel: disabilityLevel,
+      disabilityCreateRequest: {
+        disabilityType: toNull(disabilityType), // "" -> null
+        disabilityLevel: toNull(disabilityLevel ?? ""), // "" -> null
       },
-      veteran: {
-        veteranNo: veteran.veteranNo?.trim(),
-        veteranRatio: veteran.ratio as 0 | 5 | 10,
+      veteranCreateRequest: {
+        veteranNo:
+          veteran.eligibility && veteran.eligibility.trim() !== ""
+            ? toNull(veteran.veteranNo)
+            : null,
+        veteranRatio:
+          veteran.eligibility && veteran.eligibility.trim() !== "" ? veteran.ratio : null, // ✅ eligibility이 ""면 null
       },
-      military: {
-        status: militaryStatus,
-        serviceType,
-        branch,
-        rank,
-        militaryStartDate,
-        militaryEndDate,
+      militaryCreateRequest: {
+        status: militaryStatus ?? null,
+        serviceType: isServiceTypeEnabled ? serviceType ?? null : null,
+        branch: isServiceTypeEnabled ? branch ?? null : null,
+        rank: isServiceTypeEnabled ? rank ?? null : null,
+        militaryStartDate: isServiceTypeEnabled ? toNull(militaryStartDate) : null,
+        militaryEndDate: isServiceTypeEnabled ? toNull(militaryEndDate) : null,
       },
     };
 
     try {
-      // ⚠️ 사진 업로드 필요 시:
-      // const form = new FormData();
-      // form.append("json", new Blob([JSON.stringify(payload)], { type: "application/json" }));
-      // if (photo) form.append("photo", photo);
-      // -> 이 경우 http.post를 FormData 분기로 보내도록 http 유틸 사용 (Content-Type 자동)
+      if (photoChanged && photo) {
+        await ProfileApi.uploadProfileImage(photo, { withCredentials: true });
+        setPhotoChanged(false);
+      }
 
-      const res = await MemberBundleApi.saveAll(payload, {
-        withCredentials: true, // 쿠키 기반 세션이면 true
-        // bearerToken: accessToken, // Bearer 전략이면 여기에
-      });
+      console.log("payload:", JSON.stringify(InitMemberRequest, null, 2)); // ✅ 실제 값 로깅
 
+      const res = await MemberBundleApi.saveAll(InitMemberRequest, { withCredentials: true }); // ✅ 값 전달
+
+      // http.post가 ApiResponse<MemberResponse>를 그대로 반환한다면:
       setOkMsg(res.message ?? "저장되었습니다.");
-      Swal.fire({
+      await Swal.fire({
         icon: "success",
         title: "저장 완료",
         text: res.message ?? "저장되었습니다.",
         confirmButtonColor: "#0D2840",
       });
-      // navigate("/next"); // 필요 시 라우팅
     } catch (e: any) {
-      console.error(e);
       const msg = e?.message ?? "요청 중 오류가 발생했습니다.";
       setErrorMsg(msg);
-      Swal.fire({
+      await Swal.fire({
         icon: "error",
         title: "저장 실패",
         text: msg,
@@ -392,8 +357,6 @@ export default function ResumePrefillPage() {
       setSubmitting(false);
     }
   };
-
-  // ✅ 여기서 더 이상 불필요한 "};" 같은 닫힘을 넣지 마세요.
 
   return (
     <main className="min-h-full relative overflow-hidden">
@@ -465,7 +428,7 @@ export default function ResumePrefillPage() {
               label="프로필 사진"
               required
               file={photo}
-              setFile={setPhoto}
+              setFile={setPhotoWithFlag}
               maxSizeMB={3}
               allowedExt={["jpg", "jpeg", "png", "webp"]}
               onError={(msg: string) => console.warn(msg)}
@@ -569,7 +532,7 @@ export default function ResumePrefillPage() {
                 type="submit"
                 disabled={submitting || !canSubmit}
                 className="inline-flex items-center justify-center rounded-2xl px-5 py-3 text-white shadow-sm transition disabled:opacity-50 bg-brand-navy hover:bg-brand-deep"
-                onClick={showSubmitCheck} // 클릭 시 상태 안내(선택)
+                onClick={handleSubmit} // 클릭 시 상태 안내(선택)
               >
                 {submitting ? "저장 중..." : "저장하기"}
               </button>
